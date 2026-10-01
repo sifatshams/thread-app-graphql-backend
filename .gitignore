@@ -1,0 +1,37 @@
+GITIGNORE
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Cache
+.cache/
+.temp/
+.tmp/
+
+# Coverage
+coverage/
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
