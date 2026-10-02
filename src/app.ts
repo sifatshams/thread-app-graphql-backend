@@ -3,8 +3,8 @@ import express from 'express';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express5';
 
-import { resolvers } from './graphql/resolvers';
-import { typeDefs } from './graphql/schema';
+import { resolvers } from './graphql/users/resolvers';
+import { typeDefs } from './graphql/users/schema';
 
 const app = express();
 
