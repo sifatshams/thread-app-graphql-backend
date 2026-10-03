@@ -1,5 +1,8 @@
 import { GraphQLError } from 'graphql';
-import UserService, { CreateUserArgs } from '../../services/user';
+import UserService, {
+  CreateUserArgs,
+  GetUserTokenPayload,
+} from '../../services/user';
 
 export const resolvers = {
   Query: {
@@ -17,6 +20,18 @@ export const resolvers = {
         throw new GraphQLError(error.message, {
           extensions: {
             code: 'USER_CREATION_FAILED',
+          },
+        });
+      }
+    },
+
+    getUserToken: async (_: unknown, args: GetUserTokenPayload) => {
+      try {
+        return await UserService.getUserToken(args);
+      } catch (error: any) {
+        throw new GraphQLError(error.message, {
+          extensions: {
+            code: 'USER_TOKEN_GENERATION_FAILED',
           },
         });
       }
