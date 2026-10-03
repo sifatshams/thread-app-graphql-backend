@@ -1,10 +1,16 @@
 import { GraphQLError } from 'graphql';
-import { randomBytes, scryptSync } from 'node:crypto';
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { prismaClient } from '../lib/db';
+import { generateToken } from '../utils/jwt';
 
 export interface CreateUserArgs {
   firstName: string;
   lastName: string;
+  email: string;
+  password: string;
+}
+
+export interface GetUserTokenPayload {
   email: string;
   password: string;
 }
@@ -46,6 +52,45 @@ class UserService {
 
   public static async getAllUsers() {
     return await prismaClient.user.findMany();
+  }
+
+  private static async getUserByEmail(email: string) {
+    return await prismaClient.user.findUnique({ where: { email } });
+  }
+
+  public static async getUserToken(payload: GetUserTokenPayload) {
+    const { email, password } = payload;
+    const user = await this.getUserByEmail(email);
+
+    // validation for user existence
+    if (!user) {
+      throw new GraphQLError('User not found');
+    }
+
+    // password validation
+    const userSalt = user.salt;
+    const hashedPassword = scryptSync(password, userSalt, 64).toString('hex');
+    if (hashedPassword !== user.password) {
+      throw new GraphQLError('Invalid password');
+    }
+
+    // timing attack mitigation
+    const isValid = timingSafeEqual(
+      Buffer.from(hashedPassword, 'hex'),
+      Buffer.from(user.password, 'hex'),
+    );
+
+    if (!isValid) {
+      throw new GraphQLError('Invalid password');
+    }
+
+    // generate token
+    const token = generateToken({
+      userId: user.id,
+      email: user.email,
+    });
+
+    return token;
   }
 }
 
