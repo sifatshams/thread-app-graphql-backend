@@ -18,5 +18,7 @@ export const typeDefs = `#graphql
       email: String!
       password: String!
     ): User!
+
+    getUserToken(email: String!, password: String!): String!
   }
 `;
