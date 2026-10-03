@@ -1,46 +1,24 @@
 import { GraphQLError } from 'graphql';
-import { randomBytes, scryptSync } from 'node:crypto';
-import { prismaClient } from '../../lib/db';
-
-interface CreateUserArgs {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}
+import UserService, { CreateUserArgs } from '../../services/user';
 
 export const resolvers = {
   Query: {
-    users: () => prismaClient.user.findMany(),
+    users: async () => {
+      return await UserService.getAllUsers();
+    },
   },
 
   Mutation: {
     createUser: async (_: unknown, args: CreateUserArgs) => {
-      const { firstName, lastName, email, password } = args;
-
-      if (password.length < 8) {
-        throw new GraphQLError('Password must be at least 8 characters long');
-      }
-
-      const salt = randomBytes(16).toString('hex');
-      const hashedPassword = scryptSync(password, salt, 64).toString('hex');
-
       try {
-        return await prismaClient.user.create({
-          data: {
-            firstName,
-            lastName,
-            email: email.toLowerCase().trim(),
-            password: hashedPassword,
-            salt,
-            profileImageUrl: '',
+        // call the service function to create a user
+        return await UserService.createUser(args);
+      } catch (error: any) {
+        throw new GraphQLError(error.message, {
+          extensions: {
+            code: 'USER_CREATION_FAILED',
           },
         });
-      } catch (error: any) {
-        if (error.code === 'P2002') {
-          throw new GraphQLError('User already exists');
-        }
-        throw error;
       }
     },
   },
