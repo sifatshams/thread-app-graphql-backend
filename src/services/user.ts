@@ -16,6 +16,11 @@ export interface GetUserTokenPayload {
 }
 
 class UserService {
+  // password hashing function
+  private static hashPassword(password: string, salt: string): string {
+    return scryptSync(password, salt, 64).toString('hex');
+  }
+
   public static async createUser(args: CreateUserArgs) {
     const { firstName, lastName, email, password } = args;
 
@@ -26,7 +31,7 @@ class UserService {
 
     // password hashing
     const salt = randomBytes(32).toString('hex');
-    const hashedPassword = scryptSync(password, salt, 64).toString('hex');
+    const hashedPassword = this.hashPassword(password, salt);
 
     // create user in the database
     try {
@@ -68,13 +73,9 @@ class UserService {
     }
 
     // password validation
-    const userSalt = user.salt;
-    const hashedPassword = scryptSync(password, userSalt, 64).toString('hex');
-    if (hashedPassword !== user.password) {
-      throw new GraphQLError('Invalid password');
-    }
+    const hashedPassword = this.hashPassword(password, user.salt);
 
-    // timing attack mitigation
+    // timing attack mitigation (secure password comparison)
     const isValid = timingSafeEqual(
       Buffer.from(hashedPassword, 'hex'),
       Buffer.from(user.password, 'hex'),
