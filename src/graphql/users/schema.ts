@@ -9,6 +9,7 @@ export const typeDefs = `#graphql
 
   type Query {
     users: [User!]!
+    getCurrentLoggedInUser: User
   }
 
   type Mutation {
