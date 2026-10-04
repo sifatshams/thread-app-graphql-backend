@@ -59,6 +59,10 @@ class UserService {
     return await prismaClient.user.findMany();
   }
 
+  public static async getUserById(id: string) {
+    return await prismaClient.user.findUnique({ where: { id } });
+  }
+
   private static async getUserByEmail(email: string) {
     return await prismaClient.user.findUnique({ where: { email } });
   }
