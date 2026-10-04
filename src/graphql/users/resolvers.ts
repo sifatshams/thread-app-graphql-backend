@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import { GraphQLContext } from '../../app';
 import UserService, {
   CreateUserArgs,
   GetUserTokenPayload,
@@ -8,6 +9,24 @@ export const resolvers = {
   Query: {
     users: async () => {
       return await UserService.getAllUsers();
+    },
+
+    // logged in user query resolver
+    getCurrentLoggedInUser: async (
+      _: unknown,
+      __: unknown,
+      context: GraphQLContext,
+    ) => {
+      // if user context is not provided, throw an error
+      if (!context.user) {
+        throw new GraphQLError('User not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      // users main data from db with context user id
+      const loggedInUser = await UserService.getUserById(context.user.userId);
+      return loggedInUser;
     },
   },
 
