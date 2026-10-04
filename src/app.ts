@@ -29,7 +29,8 @@ export const startGqlServer = async () => {
     expressMiddleware(graphqlServer, {
       context: async ({ req }): Promise<GraphQLContext> => {
         // http header authorization: Bearer <token>
-        const authHeader = req.headers.authorization || '';
+        const authHeader = (req.headers.authorization ||
+          req.headers.Authorization) as string;
         // validate
         if (authHeader) {
           const token = authHeader.startsWith('Bearer ')
